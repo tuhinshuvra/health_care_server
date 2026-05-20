@@ -1,0 +1,131 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Get a free hosted Postgres database in seconds: `npx create-db`
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  // url      = env("DATABASE_URL")
+}
+
+enum UserStatus {
+  ACTIVE
+  INACTIVE
+  BLOCK
+}
+
+enum UserRole {
+  PATIENT
+  DOCTOR
+  ADMIN
+}
+
+enum GENDER {
+  MALE
+  FEMALE
+}
+
+model User {
+  id                 Int        @id @default(autoincrement())
+  email              String     @unique
+  password           String
+  role               UserRole   @default(PATIENT)
+  needPasswordChange Boolean    @default(true)
+  status             UserStatus @default(ACTIVE)
+  createdAt          DateTime   @default(now())
+  updatedAt          DateTime   @updatedAt
+  admin              Admin?
+  doctor             Doctor?
+  patient            Patient?
+
+  @@map("users")
+}
+
+model Admin {
+  id            String     @id @default(uuid())
+  name          String
+  email         String     @unique
+  profilePhoto  String?
+  contactNumber String?
+  idDeleted     Boolean    @default(false)
+  status        UserStatus @default(ACTIVE)
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
+
+  user User @relation(fields: [email], references: [email])
+
+  @@map("admins")
+}
+
+model Doctor {
+  id                  String  @id @default(uuid())
+  name                String
+  email               String  @unique
+  profilePhoto        String?
+  contactNumber       String?
+  address             String?
+  registrationNumber  String?
+  experience          Int     @default(0)
+  gender              GENDER?
+  appointmentFee      Int?
+  qualification       String?
+  currentWorkingPlace String?
+  designation         String?
+  isDeleted           Boolean @default(false)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user User @relation(fields: [email], references: [email])
+
+  doctorSchedules DoctorSchedules[]
+
+  @@map("doctors")
+}
+
+model Patient {
+  id            String  @id @default(uuid())
+  email         String  @unique
+  name          String
+  profilePhoto  String?
+  contactNumber String?
+  address       String?
+  gender        GENDER?
+  isDeleted     Boolean @default(false)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user User @relation(fields: [email], references: [email])
+
+  @@map("patients")
+}
+
+model Schedule {
+  id              String            @id @default(ulid())
+  startDateTime   DateTime
+  endDateTime     DateTime
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+  doctorSchedules DoctorSchedules[]
+
+  @@map("schedules")
+}
+
+model DoctorSchedules {
+  doctorId   String
+  doctor     Doctor   @relation(fields: [doctorId], references: [id])
+  scheduleId String
+  schedule   Schedule @relation(fields: [scheduleId], references: [id])
+  isBooked   Boolean  @default(false)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@id([doctorId, scheduleId])
+  @@map("doctor_schedules")
+}
