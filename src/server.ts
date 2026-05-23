@@ -10,7 +10,7 @@ let server: Server | null = null;
 async function connectToDB() {
   try {
     await prisma.$connect();
-    console.log("Hurrah! Database Connected Successfully!");
+    console.log("Thanks God! Database Connected Successfully!");
 
   } catch (error) {
     console.log(error, "DB Connection Failed!");

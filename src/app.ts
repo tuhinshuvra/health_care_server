@@ -2,6 +2,7 @@ import compression from "compression";
 import cors from "cors";
 import express from "express";
 import cookieParser from "cookie-parser";
+
 import { userRoutes } from "./modules/user/user.routes";
 import { authRoutes } from "./modules/auth/auth.routes";
 import { doctorRoutes } from "./modules/doctor/doctor.routes";
@@ -9,31 +10,33 @@ import { adminRoutes } from "./modules/admin/admin.routes";
 import { scheduleRoutes } from "./modules/schedule/schedule.route";
 import { doctorScheduleRoutes } from "./modules/doctorSchedule/doctorSchedule.route";
 
+import globalErrorHandler from "./middlewares/globalErrorHandler";
+import { specialtiesRoutes } from "./modules/specialties/specialties.routes";
+
 const app = express();
 
 // Middleware
-app.use(cors()); // Enables Cross-Origin Resource Sharing
-app.use(compression()); // Compresses response bodies for faster delivery
-app.use(express.json()); // Parse incoming JSON requests
-app.use(cookieParser());
-
 app.use(cors({
   origin: "http://localhost:3000",
   credentials: true,
 }));
 
-app.use("/api/v1/auth", authRoutes)
-app.use("/api/v1/user", userRoutes)
-app.use("/api/v1/admin", adminRoutes)
-app.use("/api/v1/doctor", doctorRoutes)
-app.use("/api/v1/schedule", scheduleRoutes)
-app.use("/api/v1/doctor-schedule", doctorScheduleRoutes)
+app.use(compression());
+app.use(express.json());
+app.use(cookieParser());
 
-// Default route for testing
+// Routes
 app.get("/", (_req, res) => {
-  res.send("Welcome Prisma API is Running!");
+  res.send("Thanks God Health Care Server is Running!");
 });
 
+app.use("/api/v1/auth", authRoutes);
+app.use("/api/v1/user", userRoutes);
+app.use("/api/v1/admin", adminRoutes);
+app.use("/api/v1/doctor", doctorRoutes);
+app.use("/api/v1/schedule", scheduleRoutes);
+app.use("/api/v1/doctor-schedule", doctorScheduleRoutes);
+app.use("/api/v1/specialties", specialtiesRoutes);
 
 // 404 Handler
 app.use((req, res, next) => {
@@ -42,5 +45,8 @@ app.use((req, res, next) => {
     message: "Route Not Found",
   });
 });
+
+// Global Error Handler
+app.use(globalErrorHandler);
 
 export default app;

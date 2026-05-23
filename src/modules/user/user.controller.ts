@@ -10,7 +10,6 @@ const createPatient = catchAsync(async (req: Request, res: Response) => {
 
     // console.log("createPatient : ", req.body);
     // console.log("createPatient result : ", result);
-
     sendResponse(res, {
         statusCode: 201,
         success: true,
@@ -18,6 +17,28 @@ const createPatient = catchAsync(async (req: Request, res: Response) => {
         data: result
     })
 })
+
+const createAdmin = catchAsync(async (req: Request, res: Response) => {
+
+    const result = await UserService.createAdmin(req);
+    sendResponse(res, {
+        statusCode: 201,
+        success: true,
+        message: "Admin Created successfuly!",
+        data: result
+    })
+});
+
+const createDoctor = catchAsync(async (req: Request, res: Response) => {
+
+    const result = await UserService.createDoctor(req);
+    sendResponse(res, {
+        statusCode: 201,
+        success: true,
+        message: "Doctor Created successfuly!",
+        data: result
+    })
+});
 
 const getAllUsers = async (req: Request, res: Response) => {
 
@@ -39,35 +60,12 @@ const getAllUsers = async (req: Request, res: Response) => {
     }
 }
 
-// const getUserById = async (req: Request, res: Response) => {
-//     try {
-//         const result = await UserService.getUserById(Number(req.params.id))
-//         res.status(201).json(result);
-//     } catch (error) {
-//         res.status(501).send(error);
-//     }
-// }
 
-// const updateUserById = async (req: Request, res: Response) => {
-//     try {
-//         const result = await UserService.updateUser(Number(req.params.id), req.body)
-//         res.status(201).json(result);
-//     } catch (error) {
-//         res.status(501).send(error);
-//     }
-// }
-
-// const deleteUserById = async (req: Request, res: Response) => {
-//     try {
-//         const result = await UserService.deleteUser(Number(req.params.id))
-//         res.status(201).json(result);
-//     } catch (error) {
-//         res.status(501).send(error);
-//     }
-// }
 
 export const UserController = {
     createPatient,
+    createDoctor,
+    createAdmin,
     getAllUsers,
     // getUserById,
     // updateUserById,

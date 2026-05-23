@@ -1,7 +1,20 @@
-type TCreateDoctor = {
-    name: string;
+import { GENDER } from "../../generated/prisma";
+
+export type IDoctorUpdateInput = {
     email: string;
-    password: string;
     contactNumber: string;
-    gender: "MALE" | "FEMALE";
-};
+    gender: GENDER;
+    appointmentFee: number;
+    name: string;
+    address: string;
+    registrationNumber: string;
+    experience: number;
+    qualification: string;
+    currentWorkingPlace: string;
+    designation: string;
+    isDeleted: boolean;
+    specialties: {
+        specialtyId: string;
+        isDeleted?: boolean;
+    }[]
+}

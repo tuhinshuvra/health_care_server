@@ -1,9 +1,8 @@
 import bcrypt from "bcryptjs";
 import { prisma } from "../../config/db";
-import { Prisma, User } from "../../generated/prisma";
+import { Admin, Doctor, Prisma, UserRole } from "../../generated/prisma";
 import { Request } from "express";
 import { fileUploader } from "../../helper/fileUploader";
-import { email } from "zod";
 import { IOptions, paginationHelper } from "../../helper/paginationHelper";
 import { userSearchableFields } from "./user.constant";
 
@@ -31,6 +30,69 @@ const createPatient = async (req: Request) => {
     })
     return result
 }
+
+const createAdmin = async (req: Request): Promise<Admin> => {
+
+    const file = req.file;
+
+    if (file) {
+        const uploadToCloudinary = await fileUploader.uploadToCloudinary(file);
+        req.body.admin.profilePhoto = uploadToCloudinary?.secure_url
+    }
+
+    const hashedPassword: string = await bcrypt.hash(req.body.password, 10)
+
+    const userData = {
+        email: req.body.admin.email,
+        password: hashedPassword,
+        role: UserRole.ADMIN
+    }
+
+    const result = await prisma.$transaction(async (transactionClient) => {
+        await transactionClient.user.create({
+            data: userData
+        });
+
+        const createdAdminData = await transactionClient.admin.create({
+            data: req.body.admin
+        });
+
+        return createdAdminData;
+    });
+
+    return result;
+};
+
+const createDoctor = async (req: Request): Promise<Doctor> => {
+
+    const file = req.file;
+
+    if (file) {
+        const uploadToCloudinary = await fileUploader.uploadToCloudinary(file);
+        req.body.doctor.profilePhoto = uploadToCloudinary?.secure_url
+    }
+    const hashedPassword: string = await bcrypt.hash(req.body.password, 10)
+
+    const userData = {
+        email: req.body.doctor.email,
+        password: hashedPassword,
+        role: UserRole.DOCTOR
+    }
+
+    const result = await prisma.$transaction(async (transactionClient) => {
+        await transactionClient.user.create({
+            data: userData
+        });
+
+        const createdDoctorData = await transactionClient.doctor.create({
+            data: req.body.doctor
+        });
+
+        return createdDoctorData;
+    });
+
+    return result;
+};
 
 const getAllUsers = async (params: any, options: IOptions) => {
     const { page, limit, skip, sortBy, sortOrder } = paginationHelper.calculatePagination(options)
@@ -87,39 +149,9 @@ const getAllUsers = async (params: any, options: IOptions) => {
     };
 }
 
-
-
-// const getUserById = async (id: number) => {
-//     const result = await prisma.user.findUnique({
-//         where: {
-//             id
-//         },
-//         select: {
-//             id: true,
-//             name: true,
-//             email: true,
-//             phone: true,
-//             picture: true,
-//             role: true,
-//             status: true,
-//             posts: true,
-//             createdAt: true,
-//             updatedAt: true,
-//         },
-//     })
-//     return result;
-// }
-
-// const updateUser = async (id: number, payload: Partial<User>) => {
-//     const result = await prisma.user.update({
-//         where: { id },
-//         data: payload
-//     })
-//     return result;
-// }
-
-
 export const UserService = {
     createPatient,
+    createDoctor,
+    createAdmin,
     getAllUsers,
 }
