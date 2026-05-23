@@ -1,18 +1,18 @@
 import { prisma } from "../../config/db";
 import { IOptions, paginationHelper } from "../../helper/paginationHelper";
-import { adminSearchableFields } from "./admin.constants";
+import { patientSearchableFields } from "./patient.constants";
 import { Prisma } from "../../generated/prisma";
-import { IAdminInput } from "./admin.interface";
+import { IPatientInput } from "./patient.interface";
 
-const getAllAdmins = async (params: any, options: IOptions) => {
+const getAllPatients = async (params: any, options: IOptions) => {
     const { page, limit, skip, sortBy, sortOrder } = paginationHelper.calculatePagination(options)
     const { searchTerm, specialties, ...filterData } = params;
 
-    const andConditions: Prisma.AdminWhereInput[] = [];
+    const andConditions: Prisma.PatientWhereInput[] = [];
 
     if (searchTerm) {
         andConditions.push({
-            OR: adminSearchableFields.map((field) => ({
+            OR: patientSearchableFields.map((field) => ({
                 [field]: {
                     contains: searchTerm,
                     mode: "insensitive"
@@ -30,9 +30,9 @@ const getAllAdmins = async (params: any, options: IOptions) => {
         andConditions.push(...filterConditions)
     }
 
-    const whereConditions: Prisma.AdminWhereInput = andConditions.length > 0 ? { AND: andConditions } : {}
+    const whereConditions: Prisma.PatientWhereInput = andConditions.length > 0 ? { AND: andConditions } : {}
 
-    const result = await prisma.admin.findMany({
+    const result = await prisma.patient.findMany({
         where: whereConditions,
         skip,
         take: limit,
@@ -41,7 +41,7 @@ const getAllAdmins = async (params: any, options: IOptions) => {
         }
     });
 
-    const total = await prisma.admin.count({
+    const total = await prisma.patient.count({
         where: whereConditions
     })
 
@@ -53,28 +53,27 @@ const getAllAdmins = async (params: any, options: IOptions) => {
         },
         data: result,
     }
-
 }
 
-const getUniqueAdmin = async (id: string) => {
-    const result = await prisma.admin.findUniqueOrThrow({
+const getUniquePatient = async (id: string) => {
+    const result = await prisma.patient.findUniqueOrThrow({
         where: { id }
     });
 
     return result;
 }
 
-const updateAdmin = async (id: string, payload: Partial<IAdminInput>) => {
-    const adminInfo = await prisma.admin.findUniqueOrThrow({
+const updatePatient = async (id: string, payload: Partial<IPatientInput>) => {
+    const patientInfo = await prisma.patient.findUniqueOrThrow({
         where: {
             id
         }
     })
 
     return await prisma.$transaction(async (tnx) => {
-        const updatedData = await tnx.admin.update({
+        const updatedData = await tnx.patient.update({
             where: {
-                id: adminInfo.id
+                id: patientInfo.id
             },
             data: payload,
         })
@@ -83,24 +82,24 @@ const updateAdmin = async (id: string, payload: Partial<IAdminInput>) => {
     })
 }
 
-const deleteUniqueAdmin = async (id: string) => {
+const deleteUniquePatient = async (id: string) => {
     try {
-        const result = await prisma.admin.delete({
+        const result = await prisma.patient.delete({
             where: { id }
         });
         return result;
 
     } catch (error: any) {
         if (error.code === "P2025") {
-            throw new Error("Admin not found");
+            throw new Error("Patient not found");
         }
         throw error;
     }
 }
 
-export const AdminService = {
-    getAllAdmins,
-    updateAdmin,
-    getUniqueAdmin,
-    deleteUniqueAdmin
+export const PatientService = {
+    getAllPatients,
+    updatePatient,
+    getUniquePatient,
+    deleteUniquePatient
 }

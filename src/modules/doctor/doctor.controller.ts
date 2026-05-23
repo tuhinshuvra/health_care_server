@@ -1,4 +1,4 @@
-import { NextFunction, Request, Response } from "express";
+import { Request, Response } from "express";
 import { DoctorService } from "./doctor.service";
 import sendResponse from "../../shared/sendResponse";
 import catchAsync from "../../shared/catchAsync";
@@ -18,12 +18,25 @@ const getAllDoctors = async (req: Request, res: Response) => {
             statusCode: 201,
             success: true,
             message: "Doctors Retrieved Successfully!",
-            data: result,
+            meta: result.meta,
+            data: result.data,
         })
     } catch (error) {
         console.log(error);
     }
 }
+
+const getUniqueDoctor = catchAsync(async (req: Request, res: Response) => {
+    const { id } = req.params;
+    const result = await DoctorService.getUniqueDoctor(id);
+
+    sendResponse(res, {
+        statusCode: 200,
+        success: true,
+        message: "Doctor retrieved successfully!",
+        data: result
+    })
+})
 
 const updateDoctor = catchAsync(async (req: Request, res: Response) => {
     const { id } = req.params;
@@ -37,10 +50,21 @@ const updateDoctor = catchAsync(async (req: Request, res: Response) => {
     })
 })
 
+const deleteUniqueDoctor = catchAsync(async (req: Request, res: Response) => {
+    const { id } = req.params;
+    const result = await DoctorService.deleteUniqueDoctor(id);
 
-
+    sendResponse(res, {
+        statusCode: 200,
+        success: true,
+        message: "Doctor deleted successfully!",
+        data: result
+    })
+})
 
 export const DoctorController = {
     getAllDoctors,
-    updateDoctor
+    updateDoctor,
+    getUniqueDoctor,
+    deleteUniqueDoctor
 }

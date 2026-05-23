@@ -7,9 +7,6 @@ import { paginationHelperFields, userFilterableFields } from "./user.constant";
 
 const createPatient = catchAsync(async (req: Request, res: Response) => {
     const result = await UserService.createPatient(req)
-
-    // console.log("createPatient : ", req.body);
-    // console.log("createPatient result : ", result);
     sendResponse(res, {
         statusCode: 201,
         success: true,
@@ -19,7 +16,6 @@ const createPatient = catchAsync(async (req: Request, res: Response) => {
 })
 
 const createAdmin = catchAsync(async (req: Request, res: Response) => {
-
     const result = await UserService.createAdmin(req);
     sendResponse(res, {
         statusCode: 201,
@@ -30,7 +26,6 @@ const createAdmin = catchAsync(async (req: Request, res: Response) => {
 });
 
 const createDoctor = catchAsync(async (req: Request, res: Response) => {
-
     const result = await UserService.createDoctor(req);
     sendResponse(res, {
         statusCode: 201,
@@ -41,7 +36,6 @@ const createDoctor = catchAsync(async (req: Request, res: Response) => {
 });
 
 const getAllUsers = async (req: Request, res: Response) => {
-
     try {
         const filters = pick(req.query, userFilterableFields)
         const options = pick(req.query, paginationHelperFields)
@@ -59,8 +53,6 @@ const getAllUsers = async (req: Request, res: Response) => {
         console.log(error);
     }
 }
-
-
 
 export const UserController = {
     createPatient,

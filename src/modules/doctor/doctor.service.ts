@@ -1,23 +1,24 @@
 import { prisma } from "../../config/db";
 import { IOptions, paginationHelper } from "../../helper/paginationHelper";
-import { doctorFilterableFields } from "./doctor.constants";
+import { doctorSearchableFields } from "./doctor.constants";
 import { Prisma } from "../../generated/prisma";
 import { IDoctorUpdateInput } from "./doctor.interface";
 
 const getAllDoctors = async (params: any, options: IOptions) => {
     const { page, limit, skip, sortBy, sortOrder } = paginationHelper.calculatePagination(options)
-    const { searchTerm, ...filterData } = params;
+    const { searchTerm, specialties, ...filterData } = params;
 
     const andConditions: Prisma.DoctorWhereInput[] = [];
 
     if (searchTerm) {
-        OR: doctorFilterableFields.map((field) => ({
-            [field]: {
-                contains: searchTerm,
-                mode: "insensitive"
-
-            }
-        }))
+        andConditions.push({
+            OR: doctorSearchableFields.map((field) => ({
+                [field]: {
+                    contains: searchTerm,
+                    mode: "insensitive"
+                }
+            }))
+        })
     }
 
     if (Object.keys(filterData).length > 0) {
@@ -28,6 +29,39 @@ const getAllDoctors = async (params: any, options: IOptions) => {
         }))
         andConditions.push(...filterConditions)
     }
+
+    const whereConditions: Prisma.DoctorWhereInput = andConditions.length > 0 ? { AND: andConditions } : {}
+
+    const result = await prisma.doctor.findMany({
+        where: whereConditions,
+        skip,
+        take: limit,
+        orderBy: {
+            [sortBy]: sortOrder
+        }
+    });
+
+    const total = await prisma.doctor.count({
+        where: whereConditions
+    })
+
+    return {
+        meta: {
+            total,
+            page,
+            limit
+        },
+        data: result,
+    }
+
+}
+
+const getUniqueDoctor = async (id: string) => {
+    const result = await prisma.doctor.findUniqueOrThrow({
+        where: { id }
+    });
+
+    return result;
 }
 
 const updateDoctor = async (id: string, payload: Partial<IDoctorUpdateInput>) => {
@@ -35,7 +69,7 @@ const updateDoctor = async (id: string, payload: Partial<IDoctorUpdateInput>) =>
         where: {
             id
         }
-    });
+    })
 
     const { specialties, ...doctorData } = payload;
 
@@ -78,11 +112,28 @@ const updateDoctor = async (id: string, payload: Partial<IDoctorUpdateInput>) =>
             }
         })
 
-        return updatedData
+        return updatedData;
     })
+}
+
+const deleteUniqueDoctor = async (id: string) => {
+    try {
+        const result = await prisma.doctor.delete({
+            where: { id }
+        });
+        return result;
+
+    } catch (error: any) {
+        if (error.code === "P2025") {
+            throw new Error("Doctor not found");
+        }
+        throw error;
+    }
 }
 
 export const DoctorService = {
     getAllDoctors,
     updateDoctor,
+    getUniqueDoctor,
+    deleteUniqueDoctor
 }

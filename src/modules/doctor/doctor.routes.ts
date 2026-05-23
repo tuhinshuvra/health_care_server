@@ -5,7 +5,7 @@ const router = express.Router();
 
 router.get("/", DoctorController.getAllDoctors)
 router.patch("/:id", DoctorController.updateDoctor)
-// router.patch("/:id", UserController.updateUserById)
-// router.delete("/:id", UserController.deleteUserById)
+router.get("/:id", DoctorController.getUniqueDoctor)
+router.delete("/:id", DoctorController.deleteUniqueDoctor)
 
 export const doctorRoutes = router;

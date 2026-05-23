@@ -1,7 +1,7 @@
-type TCreateAdmin = {
+import { GENDER } from "../../generated/prisma";
+
+export type IAdminInput = {
     name: string;
     email: string;
-    password: string;
     contactNumber: string;
-    gender: "MALE" | "FEMALE";
-};
+}
