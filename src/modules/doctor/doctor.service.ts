@@ -3,6 +3,7 @@ import { IOptions, paginationHelper } from "../../helper/paginationHelper";
 import { doctorSearchableFields } from "./doctor.constants";
 import { Prisma } from "../../generated/prisma";
 import { IDoctorUpdateInput } from "./doctor.interface";
+import { title } from "node:process";
 
 const getAllDoctors = async (params: any, options: IOptions) => {
     const { page, limit, skip, sortBy, sortOrder } = paginationHelper.calculatePagination(options)
@@ -18,6 +19,21 @@ const getAllDoctors = async (params: any, options: IOptions) => {
                     mode: "insensitive"
                 }
             }))
+        })
+    }
+
+    if (specialties && specialties.length > 0) {
+        andConditions.push({
+            doctorSpecialties: {
+                some: {
+                    specialties: {
+                        title: {
+                            contains: specialties,
+                            mode: "insensitive"
+                        }
+                    }
+                }
+            }
         })
     }
 
@@ -38,6 +54,13 @@ const getAllDoctors = async (params: any, options: IOptions) => {
         take: limit,
         orderBy: {
             [sortBy]: sortOrder
+        },
+        include: {
+            doctorSpecialties: {
+                include: {
+                    specialties: true
+                }
+            }
         }
     });
 
