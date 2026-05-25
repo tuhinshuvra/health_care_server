@@ -211,5 +211,6 @@ export const DoctorService = {
     getAllDoctors,
     getAISuggestions,
     getUniqueDoctor,
+    updateDoctor,
     deleteUniqueDoctor
 }
