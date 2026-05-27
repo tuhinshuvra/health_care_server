@@ -7,6 +7,8 @@ import httpStatus from 'http-status';
 import ApiError from "../../errors/ApiError";
 import { openai } from "../../helper/open_router";
 import { extractJsonFromMessage } from "../../helper/extractJsonFromMessage";
+import { includes } from "zod";
+import { specialtiesRoutes } from "../specialties/specialties.routes";
 
 const getAllDoctors = async (params: any, options: IOptions) => {
     const { page, limit, skip, sortBy, sortOrder } = paginationHelper.calculatePagination(options)
@@ -133,8 +135,23 @@ const getAISuggestions = async (payload: { symptoms: string }) => {
 }
 
 const getUniqueDoctor = async (id: string) => {
-    const result = await prisma.doctor.findUniqueOrThrow({
-        where: { id }
+    const result = await prisma.doctor.findUnique({
+        where: {
+            id,
+            isDeleted: false,
+        },
+        include: {
+            doctorSpecialties: {
+                include: {
+                    specialties: true,
+                }
+            },
+            doctorSchedules: {
+                include: {
+                    schedule: true
+                }
+            }
+        }
     });
 
     return result;

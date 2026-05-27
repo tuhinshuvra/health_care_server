@@ -3,6 +3,7 @@ import cors from "cors";
 import express from "express";
 import cookieParser from "cookie-parser";
 
+import globalErrorHandler from "./middlewares/globalErrorHandler";
 import { userRoutes } from "./modules/user/user.routes";
 import { authRoutes } from "./modules/auth/auth.routes";
 import { adminRoutes } from "./modules/admin/admin.routes";
@@ -10,8 +11,8 @@ import { doctorRoutes } from "./modules/doctor/doctor.routes";
 import { patientRoutes } from "./modules/patient/patient.routes";
 import { scheduleRoutes } from "./modules/schedule/schedule.route";
 import { doctorScheduleRoutes } from "./modules/doctorSchedule/doctorSchedule.route";
-import globalErrorHandler from "./middlewares/globalErrorHandler";
 import { specialtiesRoutes } from "./modules/specialties/specialties.routes";
+import { appointmentRoutes } from "./modules/appointment/appointment.routes";
 
 const app = express();
 
@@ -38,6 +39,7 @@ app.use("/api/v1/patient", patientRoutes);
 app.use("/api/v1/schedule", scheduleRoutes);
 app.use("/api/v1/doctor-schedule", doctorScheduleRoutes);
 app.use("/api/v1/specialties", specialtiesRoutes);
+app.use("/api/v1/appointment", appointmentRoutes);
 
 // 404 Handler
 app.use((req, res, next) => {
