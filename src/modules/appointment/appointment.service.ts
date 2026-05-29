@@ -87,7 +87,7 @@ const createAppointment = async (user: IJWTPayload, payload: { doctorId: string,
             cancel_url: `https://next.programming-hero.com/`,
         });
 
-        console.log("stripe.checkout.session : ", session);
+        // console.log("stripe.checkout.session : ", session);
 
         return { paymentUrl: session.url };
     })
