@@ -13,8 +13,16 @@ import { scheduleRoutes } from "./modules/schedule/schedule.route";
 import { doctorScheduleRoutes } from "./modules/doctorSchedule/doctorSchedule.route";
 import { specialtiesRoutes } from "./modules/specialties/specialties.routes";
 import { appointmentRoutes } from "./modules/appointment/appointment.routes";
+import { PaymentController } from "./modules/payment/payment.controller";
+import { prescriptionRoutes } from "./modules/prescription/prescription.routes";
 
 const app = express();
+
+app.post(
+  "/webhook",
+  express.raw({ type: "application/json" }),
+  PaymentController.handleStripeWebhookEvent
+)
 
 // Middleware
 app.use(cors({
@@ -40,6 +48,7 @@ app.use("/api/v1/schedule", scheduleRoutes);
 app.use("/api/v1/doctor-schedule", doctorScheduleRoutes);
 app.use("/api/v1/specialties", specialtiesRoutes);
 app.use("/api/v1/appointment", appointmentRoutes);
+app.use("/api/v1/prescription", prescriptionRoutes);
 
 // 404 Handler
 app.use((req, res, next) => {
