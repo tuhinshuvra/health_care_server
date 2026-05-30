@@ -5,6 +5,8 @@ import catchAsync from "../../shared/catchAsync";
 import { paginationHelperFields } from "../user/user.constant";
 import { patientFilterableFields } from "./patient.constants";
 import pick from "../../helper/pick";
+import { IJWTPayload } from "../../types/common";
+import httpStatus from "http-status";
 
 const getAllPatients = async (req: Request, res: Response) => {
 
@@ -38,14 +40,14 @@ const getUniquePatient = catchAsync(async (req: Request, res: Response) => {
     })
 })
 
-const updatePatient = catchAsync(async (req: Request, res: Response) => {
-    const { id } = req.params;
-    const result = await PatientService.updatePatient(id, req.body);
+const updatePatientData = catchAsync(async (req: Request & { user?: IJWTPayload }, res: Response) => {
+    const user = req.user;
+    const result = await PatientService.updatePatientData(user as IJWTPayload, req.body);
 
     sendResponse(res, {
-        statusCode: 200,
+        statusCode: httpStatus.OK,
         success: true,
-        message: "Patient updated successfully!",
+        message: "Patient data updated successfully!",
         data: result
     })
 })
@@ -64,7 +66,7 @@ const deleteUniquePatient = catchAsync(async (req: Request, res: Response) => {
 
 export const PatientController = {
     getAllPatients,
-    updatePatient,
+    updatePatientData,
     getUniquePatient,
     deleteUniquePatient
 }

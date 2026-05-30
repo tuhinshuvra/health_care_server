@@ -65,7 +65,13 @@ const getAllDoctors = async (params: any, options: IOptions) => {
                 include: {
                     specialties: true
                 }
-            }
+            },
+            reviews: {
+                select: {
+                    rating: true,
+                    comment: true
+                }
+            },
         }
     });
 
@@ -150,7 +156,8 @@ const getUniqueDoctor = async (id: string) => {
                 include: {
                     schedule: true
                 }
-            }
+            },
+            reviews: true
         }
     });
 

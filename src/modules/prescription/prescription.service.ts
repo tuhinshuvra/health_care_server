@@ -1,8 +1,50 @@
 import { prisma } from "../../config/db";
 import ApiError from "../../errors/ApiError";
 import { AppointmentStatus, PaymentStatus, Prescription, UserRole } from "../../generated/prisma";
+import { paginationHelper } from "../../helper/paginationHelper";
+import { IAuthUser } from "../../interfaces/common";
+import { IPaginationOptions } from "../../interfaces/pagination";
 import { IJWTPayload } from "../../types/common";
 import httpStatus from "http-status";
+
+const patientPrescription = async (user: IAuthUser, options: IPaginationOptions) => {
+    const { limit, page, skip } = paginationHelper.calculatePagination(options);
+
+    const result = await prisma.prescription.findMany({
+        where: {
+            patient: {
+                email: user?.email
+            }
+        },
+        skip,
+        take: limit,
+        orderBy: options.sortBy && options.sortOrder
+            ? { [options.sortBy]: options.sortOrder }
+            : { createdAt: 'desc' },
+        include: {
+            doctor: true,
+            patient: true,
+            appointment: true
+        }
+    });
+
+    const total = await prisma.prescription.count({
+        where: {
+            patient: {
+                email: user?.email
+            }
+        }
+    })
+
+    return {
+        meta: {
+            total,
+            page,
+            limit
+        },
+        data: result
+    };
+};
 
 const createPrescription = async (user: IJWTPayload, payload: Partial<Prescription>) => {
     const appointmentData = await prisma.appointment.findUniqueOrThrow({
@@ -41,4 +83,5 @@ const createPrescription = async (user: IJWTPayload, payload: Partial<Prescripti
 
 export const PrescriptionService = {
     createPrescription,
+    patientPrescription
 }

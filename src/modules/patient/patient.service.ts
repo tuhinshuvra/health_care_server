@@ -2,7 +2,7 @@ import { prisma } from "../../config/db";
 import { IOptions, paginationHelper } from "../../helper/paginationHelper";
 import { patientSearchableFields } from "./patient.constants";
 import { Prisma } from "../../generated/prisma";
-import { IPatientInput } from "./patient.interface";
+import { IJWTPayload } from "../../types/common";
 
 const getAllPatients = async (params: any, options: IOptions) => {
     const { page, limit, skip, sortBy, sortOrder } = paginationHelper.calculatePagination(options)
@@ -63,22 +63,56 @@ const getUniquePatient = async (id: string) => {
     return result;
 }
 
-const updatePatient = async (id: string, payload: Partial<IPatientInput>) => {
+const updatePatientData = async (user: IJWTPayload, payload: any) => {
+    const { medicalReport, patientHealthData, ...patientData } = payload;
+
     const patientInfo = await prisma.patient.findUniqueOrThrow({
         where: {
-            id
+            email: user.email,
+            isDeleted: false
         }
     })
 
     return await prisma.$transaction(async (tnx) => {
-        const updatedData = await tnx.patient.update({
+        await tnx.patient.update({
             where: {
                 id: patientInfo.id
             },
-            data: payload,
+            data: patientData
         })
 
-        return updatedData;
+        if (patientHealthData) {
+            await tnx.patientHealthData.upsert({
+                where: {
+                    patientId: patientInfo.id,
+                },
+                update: patientHealthData,
+                create: {
+                    ...patientHealthData,
+                    patientId: patientInfo.id
+                }
+            })
+        }
+
+        if (medicalReport) {
+            await tnx.medicalReport.create({
+                data: {
+                    ...medicalReport,
+                    patientId: patientInfo.id
+                }
+            })
+        }
+
+        const result = tnx.patient.findUnique({
+            where: {
+                id: patientInfo.id
+            },
+            include: {
+                patientHealthData: true,
+                medicalReports: true
+            }
+        })
+        return result
     })
 }
 
@@ -99,7 +133,7 @@ const deleteUniquePatient = async (id: string) => {
 
 export const PatientService = {
     getAllPatients,
-    updatePatient,
+    updatePatientData,
     getUniquePatient,
     deleteUniquePatient
 }

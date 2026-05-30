@@ -15,6 +15,7 @@ import { specialtiesRoutes } from "./modules/specialties/specialties.routes";
 import { appointmentRoutes } from "./modules/appointment/appointment.routes";
 import { PaymentController } from "./modules/payment/payment.controller";
 import { prescriptionRoutes } from "./modules/prescription/prescription.routes";
+import { reviewRoutes } from "./modules/review/review.route";
 
 const app = express();
 
@@ -49,6 +50,7 @@ app.use("/api/v1/doctor-schedule", doctorScheduleRoutes);
 app.use("/api/v1/specialties", specialtiesRoutes);
 app.use("/api/v1/appointment", appointmentRoutes);
 app.use("/api/v1/prescription", prescriptionRoutes);
+app.use("/api/v1/review", reviewRoutes);
 
 // 404 Handler
 app.use((req, res, next) => {
