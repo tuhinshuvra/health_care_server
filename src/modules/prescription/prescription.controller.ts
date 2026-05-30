@@ -7,8 +7,6 @@ import httpStatus from "http-status";
 import pick from "../../helper/pick";
 import { paginationHelperFields } from "../user/user.constant";
 
-
-
 const patientPrescription = catchAsync(async (req: Request & { user?: IJWTPayload }, res: Response) => {
     const user = req.user;
     const options = pick(req.query, paginationHelperFields)

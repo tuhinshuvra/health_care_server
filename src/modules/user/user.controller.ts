@@ -1,9 +1,23 @@
-import { NextFunction, Request, Response } from "express";
+import { Request, Response } from "express";
 import { UserService } from "./user.service";
 import sendResponse from "../../shared/sendResponse";
 import catchAsync from "../../shared/catchAsync";
 import pick from "../../helper/pick";
 import { paginationHelperFields, userFilterableFields } from "./user.constant";
+import { IJWTPayload } from "../../types/common";
+import httpStatus from "http-status";
+
+const getMyProfile = catchAsync(async (req: Request & { user?: IJWTPayload }, res: Response) => {
+    const user = req.user;
+
+    const result = await UserService.getMyProfile(user as IJWTPayload)
+    sendResponse(res, {
+        statusCode: httpStatus.OK,
+        success: true,
+        message: "My Profile Fetched Successfully!",
+        data: result
+    })
+})
 
 const createPatient = catchAsync(async (req: Request, res: Response) => {
     const result = await UserService.createPatient(req)
@@ -30,7 +44,7 @@ const createDoctor = catchAsync(async (req: Request, res: Response) => {
     sendResponse(res, {
         statusCode: 201,
         success: true,
-        message: "Doctor Created successfuly!",
+        message: "Doctor Created Successfully!",
         data: result
     })
 });
@@ -54,12 +68,24 @@ const getAllUsers = async (req: Request, res: Response) => {
     }
 }
 
+const changeProfileStatus = catchAsync(async (req: Request, res: Response) => {
+
+    const { id } = req.params;
+    const result = await UserService.changeProfileStatus(id, req.body)
+
+    sendResponse(res, {
+        statusCode: httpStatus.OK,
+        success: true,
+        message: "Users profile status changed!",
+        data: result
+    })
+});
+
 export const UserController = {
+    getMyProfile,
     createPatient,
     createDoctor,
     createAdmin,
     getAllUsers,
-    // getUserById,
-    // updateUserById,
-    // deleteUserById
+    changeProfileStatus
 }

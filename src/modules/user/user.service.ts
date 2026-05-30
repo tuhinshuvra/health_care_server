@@ -1,10 +1,59 @@
 import bcrypt from "bcryptjs";
 import { prisma } from "../../config/db";
-import { Admin, Doctor, Prisma, UserRole } from "../../generated/prisma";
+import { Admin, Doctor, Prisma, UserRole, UserStatus } from "../../generated/prisma";
 import { Request } from "express";
 import { fileUploader } from "../../helper/fileUploader";
 import { IOptions, paginationHelper } from "../../helper/paginationHelper";
 import { userSearchableFields } from "./user.constant";
+import { IJWTPayload } from "../../types/common";
+
+const getMyProfile = async (user: IJWTPayload) => {
+    const userInfo = await prisma.user.findUniqueOrThrow({
+        where: {
+            email: user.email,
+            status: UserStatus.ACTIVE
+        },
+        select: {
+            id: true,
+            email: true,
+            needPasswordChange: true,
+            role: true,
+            status: true,
+        }
+    })
+
+    let profileData;
+
+    if (userInfo.role === UserRole.PATIENT) {
+        profileData = await prisma.patient.findUnique({
+            where: {
+                email: userInfo.email
+            }
+        })
+    }
+
+    if (userInfo.role === UserRole.DOCTOR) {
+        profileData = await prisma.doctor.findUnique({
+            where: {
+                email: userInfo.email
+            }
+        })
+    }
+
+    if (userInfo.role === UserRole.ADMIN) {
+        profileData = await prisma.admin.findUnique({
+            where: {
+                email: userInfo.email
+            }
+        })
+    }
+
+
+    return {
+        ...userInfo,
+        ...profileData
+    };
+}
 
 const createPatient = async (req: Request) => {
     if (req.file) {
@@ -149,9 +198,28 @@ const getAllUsers = async (params: any, options: IOptions) => {
     };
 }
 
+const changeProfileStatus = async (id: any, payload: { status: UserStatus }) => {
+    const userData = await prisma.user.findUniqueOrThrow({
+        where: {
+            id
+        }
+    })
+
+    const updateUserStatus = await prisma.user.update({
+        where: {
+            id
+        },
+        data: payload
+    })
+
+    return updateUserStatus;
+};
+
 export const UserService = {
+    getMyProfile,
     createPatient,
     createDoctor,
     createAdmin,
     getAllUsers,
+    changeProfileStatus
 }

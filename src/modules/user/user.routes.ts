@@ -13,6 +13,12 @@ router.get(
     UserController.getAllUsers
 )
 
+router.get(
+    "/me",
+    auth(UserRole.ADMIN, UserRole.DOCTOR, UserRole.PATIENT),
+    UserController.getMyProfile
+)
+
 router.post(
     "/create-patient",
     fileUploader.upload.single('file'),
@@ -43,9 +49,10 @@ router.post(
     }
 );
 
-
-// router.get("/:id", UserController.getUserById)
-// router.patch("/:id", UserController.updateUserById)
-// router.delete("/:id", Use rController.deleteUserById)
+router.patch(
+    '/:id/status',
+    auth(UserRole.ADMIN),
+    UserController.changeProfileStatus
+)
 
 export const userRoutes = router;
