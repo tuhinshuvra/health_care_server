@@ -18,6 +18,7 @@ import { prescriptionRoutes } from "./modules/prescription/prescription.routes";
 import { reviewRoutes } from "./modules/review/review.route";
 import cron from 'node-cron';
 import { AppointmentService } from "./modules/appointment/appointment.service";
+import { metaRoutes } from "./modules/meta/meta.routes";
 
 const app = express();
 
@@ -40,7 +41,7 @@ app.use(cookieParser());
 
 // Cronjob for cancel UnPaid Appointments
 cron.schedule('* * * * *', () => {
-  console.log('CancelUnPaidAppointment : ', new Date());
+  // console.log('CancelUnPaidAppointment : ', new Date());
   try {
     AppointmentService.cancelUnPaidAppointment();
   } catch (error) {
@@ -68,6 +69,7 @@ app.use("/api/v1/specialties", specialtiesRoutes);
 app.use("/api/v1/appointment", appointmentRoutes);
 app.use("/api/v1/prescription", prescriptionRoutes);
 app.use("/api/v1/review", reviewRoutes);
+app.use("/api/v1/metadata", metaRoutes);
 
 // 404 Handler
 app.use((req, res, next) => {
