@@ -16,6 +16,8 @@ import { appointmentRoutes } from "./modules/appointment/appointment.routes";
 import { PaymentController } from "./modules/payment/payment.controller";
 import { prescriptionRoutes } from "./modules/prescription/prescription.routes";
 import { reviewRoutes } from "./modules/review/review.route";
+import cron from 'node-cron';
+import { AppointmentService } from "./modules/appointment/appointment.service";
 
 const app = express();
 
@@ -34,6 +36,21 @@ app.use(cors({
 app.use(compression());
 app.use(express.json());
 app.use(cookieParser());
+
+
+// Cronjob for cancel UnPaid Appointments
+cron.schedule('* * * * *', () => {
+  console.log('CancelUnPaidAppointment : ', new Date());
+  try {
+    AppointmentService.cancelUnPaidAppointment();
+  } catch (error) {
+    console.log("Cancel UnPaid Appointment Error : ", error);
+  }
+});
+
+
+
+
 
 // Routes
 app.get("/", (_req, res) => {
