@@ -43,7 +43,7 @@ const globalErrorHandler = (
         // Record not found
         else if (err.code === "P2025") {
             statusCode = httpStatus.NOT_FOUND;
-            message = "Doctor Schedule for this time is not available!";
+            message = "Requested resource not found.";
             error = err.meta;
         }
     }
