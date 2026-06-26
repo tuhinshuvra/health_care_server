@@ -1,7 +1,7 @@
 
 # Next Blog Starter
 
-A simple **Blog Application Starter Pack** built with **TypeScript, Express.js**.  
+A **Health Care Service Backend** built with **TypeScript, Express.js**.  
 This project is designed for the **Next Level Web Development Bootcamp** to help learners practice Prisma hands-on by building a blog platform.
 
 ---
