@@ -1,2 +1,0 @@
-export const doctorFilterableFields = ["email", "contactNumber", "gender", "appointmentFee", "specialties", "qualification", "address", "searchTerm"];
-export const doctorSearchableFields = ["name", "email", "contactNumber", "address", "designation"];

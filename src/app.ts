@@ -1,85 +1,60 @@
-import compression from "compression";
-import cors from "cors";
-import express from "express";
-import cookieParser from "cookie-parser";
-
-import globalErrorHandler from "./middlewares/globalErrorHandler";
-import { userRoutes } from "./modules/user/user.routes";
-import { authRoutes } from "./modules/auth/auth.routes";
-import { adminRoutes } from "./modules/admin/admin.routes";
-import { doctorRoutes } from "./modules/doctor/doctor.routes";
-import { patientRoutes } from "./modules/patient/patient.routes";
-import { scheduleRoutes } from "./modules/schedule/schedule.route";
-import { doctorScheduleRoutes } from "./modules/doctorSchedule/doctorSchedule.route";
-import { specialtiesRoutes } from "./modules/specialties/specialties.routes";
-import { appointmentRoutes } from "./modules/appointment/appointment.routes";
-import { PaymentController } from "./modules/payment/payment.controller";
-import { prescriptionRoutes } from "./modules/prescription/prescription.routes";
-import { reviewRoutes } from "./modules/review/review.route";
+import cookieParser from 'cookie-parser';
+import cors from 'cors';
+import express, { Application, NextFunction, Request, Response } from 'express';
+import httpStatus from 'http-status';
 import cron from 'node-cron';
-import { AppointmentService } from "./modules/appointment/appointment.service";
-import { metaRoutes } from "./modules/meta/meta.routes";
+import globalErrorHandler from './app/middlewares/globalErrorHandler';
+import router from './app/routes';
+import { PaymentController } from './app/modules/payment/payment.controller';
+import { AppointmentService } from './app/modules/appointment/appointment.service';
 
-const app = express();
-
-app.post(
-  "/webhook",
-  express.raw({ type: "application/json" }),
-  PaymentController.handleStripeWebhookEvent
-)
-
-// Middleware
-app.use(cors({
-  origin: "http://localhost:3000",
-  credentials: true,
-}));
-
-app.use(compression());
-app.use(express.json());
+const app: Application = express();
 app.use(cookieParser());
 
+app.post(
+    "/webhook",
+    express.raw({ type: "application/json" }),
+    PaymentController.handleStripeWebhookEvent
+);
 
-// Cronjob for cancel UnPaid Appointments
-cron.schedule('* * * * *', () => {
-  // console.log('CancelUnPaidAppointment : ', new Date());
-  try {
-    AppointmentService.cancelUnPaidAppointment();
-  } catch (error) {
-    console.log("Cancel UnPaid Appointment Error : ", error);
-  }
+app.use(cors({
+    origin: ['http://localhost:3000', 'http://localhost:3001'],
+    credentials: true
+}));
+
+//parser
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
+
+cron.schedule('*/5 * * * *', () => {
+    try {
+        console.log("🔄 Running unpaid appointment cleanup at", new Date().toISOString());
+        AppointmentService.cancelUnpaidAppointments();
+    } catch (err) {
+        console.error("❌ Cron job error:", err);
+    }
 });
 
-
-
-
-
-// Routes
-app.get("/", (_req, res) => {
-  res.send("Thanks God Health-Care-Server is Running!");
+app.get('/', (req: Request, res: Response) => {
+    res.send({
+        Message: "Ph health care server.."
+    })
 });
 
-app.use("/api/v1/auth", authRoutes);
-app.use("/api/v1/user", userRoutes);
-app.use("/api/v1/admin", adminRoutes);
-app.use("/api/v1/doctor", doctorRoutes);
-app.use("/api/v1/patient", patientRoutes);
-app.use("/api/v1/schedule", scheduleRoutes);
-app.use("/api/v1/doctor-schedule", doctorScheduleRoutes);
-app.use("/api/v1/specialties", specialtiesRoutes);
-app.use("/api/v1/appointment", appointmentRoutes);
-app.use("/api/v1/prescription", prescriptionRoutes);
-app.use("/api/v1/review", reviewRoutes);
-app.use("/api/v1/metadata", metaRoutes);
+app.use('/api/v1', router);
 
-// 404 Handler
-app.use((req, res, next) => {
-  res.status(404).json({
-    success: false,
-    message: "Route Not Found",
-  });
-});
-
-// Global Error Handler
 app.use(globalErrorHandler);
+
+app.use((req: Request, res: Response, next: NextFunction) => {
+    res.status(httpStatus.NOT_FOUND).json({
+        success: false,
+        message: "API NOT FOUND!",
+        error: {
+            path: req.originalUrl,
+            message: "Your requested path is not found!"
+        }
+    })
+})
 
 export default app;
